@@ -34,6 +34,17 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# 🔴 RÉINITIALISATION AUTOMATIQUE À L'OUVERTURE
+if "init_effectue" not in st.session_state:
+    import shutil
+    import os
+    
+    dossiers_a_vider = ["data", "output/articles_ok"]
+    for dossier in dossiers_a_vider:
+        if os.path.exists(dossier):
+            shutil.rmtree(dossier)
+            
+    st.session_state["init_effectue"] = True # Pour ne le faire qu'une seule fois par session
 # ─────────────────────────────────────────
 # CSS GLOBAL
 # ─────────────────────────────────────────
