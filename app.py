@@ -16,6 +16,8 @@ import io
 # ─────────────────────────────────────────
 if "ANTHROPIC_API_KEY" in st.secrets:
     os.environ["ANTHROPIC_API_KEY"] = st.secrets["ANTHROPIC_API_KEY"]
+if "UNSPLASH_ACCESS_KEY" in st.secrets:
+    os.environ["UNSPLASH_ACCESS_KEY"] = st.secrets["UNSPLASH_ACCESS_KEY"]
     
 # Import des modules core
 from core.veille  import lancer_veille, charger_articles, sauvegarder_statut
