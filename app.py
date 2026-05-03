@@ -483,9 +483,12 @@ elif page == "📰 Articles":
                                 from core.charte import charte_defaut as cd
                                 charte_finale = cd()
 
-                            # Générer le visuel
+                            # Récupération automatique du logo sauvegardé
+                            logo_path = charger_logo() 
+                            
+                            # Générer le visuel avec le logo
                             nom_f   = fichier.replace("data/articles\\","").replace("data/articles/","").replace(".json","")
-                            chemin  = generer_visuel(art, nom_f, charte_finale)
+                            chemin  = generer_visuel(art, nom_f, charte_finale, logo_path=logo_path)
 
                             # Marquer comme publié
                             sauvegarder_statut(fichier, "publié")
