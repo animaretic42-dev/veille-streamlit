@@ -14,15 +14,24 @@ from datetime import datetime
 # POLICES
 # ─────────────────────────────────────────
 def trouver_police(taille, gras=False):
+    # Cherche d'abord dans le dossier local (veille-pro/)
+    # puis dans les polices Windows
+    # DejaVuSans est prioritaire car il supporte tous les accents français
+    dossier_local = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
     candidats_gras = [
-        "DejaVuSans-Bold.ttf",
+        os.path.join(dossier_local, "DejaVuSans.ttf"),
+        "DejaVuSans.ttf",
+        "C:/Windows/Fonts/DejaVuSans.ttf",
         "C:/Windows/Fonts/arialbd.ttf",
         "C:/Windows/Fonts/calibrib.ttf",
         "C:/Windows/Fonts/segoeui.ttf",
         "Montserrat-Bold.ttf",
     ]
     candidats_normal = [
+        os.path.join(dossier_local, "DejaVuSans.ttf"),
         "DejaVuSans.ttf",
+        "C:/Windows/Fonts/DejaVuSans.ttf",
         "C:/Windows/Fonts/arial.ttf",
         "C:/Windows/Fonts/calibri.ttf",
         "C:/Windows/Fonts/segoeui.ttf",
@@ -34,7 +43,6 @@ def trouver_police(taille, gras=False):
         except:
             continue
     return ImageFont.load_default()
-
 
 # ─────────────────────────────────────────
 # NETTOYAGE HTML
@@ -155,7 +163,7 @@ def titre_deux_lignes(draw, titre, x, y, larg_max, couleur):
     Réduit la taille de police pour faire tenir sur 2 lignes.
     Ne coupe plus jamais avec des points de suspension.
     """
-    for taille in range(52, 22, -2):
+    for taille in range(72, 22, -2):
         police = trouver_police(taille, gras=True)
         bbox   = draw.textbbox((0, 0), titre, font=police)
         larg_titre = bbox[2] - bbox[0]
@@ -209,7 +217,7 @@ def taille_adaptative_zone(nb_chars, largeur_zone, hauteur_zone):
     Calcule la taille de police optimale pour remplir
     au mieux la zone de texte disponible.
     """
-    for taille in range(24, 11, -1):
+    for taille in range(32, 11, -1):
         interligne   = int(taille * 1.6)
         chars_ligne  = int(largeur_zone / (taille * 0.50))
         nb_lignes    = int(hauteur_zone / interligne)
