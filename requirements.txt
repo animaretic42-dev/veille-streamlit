@@ -1,0 +1,9 @@
+streamlit
+anthropic
+feedparser
+requests
+python-dotenv
+Pillow
+scikit-learn
+numpy
+colorthief
