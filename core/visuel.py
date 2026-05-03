@@ -222,7 +222,7 @@ def taille_adaptative_zone(nb_chars, largeur_zone, hauteur_zone):
 # ─────────────────────────────────────────
 # GÉNÉRATION DU VISUEL
 # ─────────────────────────────────────────
-def generer_visuel(article, nom_fichier, charte=None, dossier_sortie="output/articles_ok"):
+def generer_visuel(article, nom_fichier, charte, logo_path=None):
     from core.charte import charte_defaut
     if charte is None:
         charte = charte_defaut()
