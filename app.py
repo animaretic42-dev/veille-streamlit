@@ -11,6 +11,12 @@ from datetime import datetime
 from PIL import Image
 import io
 
+# ─────────────────────────────────────────
+# GESTION DES SECRETS STREAMLIT
+# ─────────────────────────────────────────
+if "ANTHROPIC_API_KEY" in st.secrets:
+    os.environ["ANTHROPIC_API_KEY"] = st.secrets["ANTHROPIC_API_KEY"]
+    
 # Import des modules core
 from core.veille  import lancer_veille, charger_articles, sauvegarder_statut
 from core.charte  import analyser_charte, sauvegarder_charte, charger_charte, charte_defaut
