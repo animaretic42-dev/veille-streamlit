@@ -44,6 +44,7 @@ def trouver_police(taille, gras=False):
             continue
     return ImageFont.load_default()
 
+
 # ─────────────────────────────────────────
 # NETTOYAGE HTML
 # ─────────────────────────────────────────
@@ -158,11 +159,6 @@ def texte_justifie(draw, texte, x, y, larg, police, couleur, interligne):
 # TITRE SUR 2 LIGNES MAX — ADAPTATIF
 # ─────────────────────────────────────────
 def titre_deux_lignes(draw, titre, x, y, larg_max, couleur):
-    """
-    Affiche le titre sur 1 ou 2 lignes maximum.
-    Réduit la taille de police pour faire tenir sur 2 lignes.
-    Ne coupe plus jamais avec des points de suspension.
-    """
     for taille in range(72, 22, -2):
         police = trouver_police(taille, gras=True)
         bbox   = draw.textbbox((0, 0), titre, font=police)
@@ -183,7 +179,6 @@ def titre_deux_lignes(draw, titre, x, y, larg_max, couleur):
             b1 = draw.textbbox((0, 0), ligne1, font=police)
             b2 = draw.textbbox((0, 0), ligne2, font=police)
             if b1[2] <= larg_max and b2[2] <= larg_max:
-                # Les deux lignes tiennent — cherche la coupure la plus équilibrée
                 diff = abs((b1[2] - b1[0]) - (b2[2] - b2[0]))
                 if meilleure_coupure is None or diff < meilleure_coupure[0]:
                     meilleure_coupure = (diff, ligne1, ligne2, b1, b2)
@@ -191,7 +186,7 @@ def titre_deux_lignes(draw, titre, x, y, larg_max, couleur):
         if meilleure_coupure:
             _, ligne1, ligne2, b1, b2 = meilleure_coupure
             h_ligne = b1[3] - b1[1]
-            draw.text((x, y),              ligne1, font=police, fill=couleur)
+            draw.text((x, y),             ligne1, font=police, fill=couleur)
             draw.text((x, y + h_ligne + 6), ligne2, font=police, fill=couleur)
             return y + h_ligne * 2 + 20, taille
 
@@ -203,20 +198,15 @@ def titre_deux_lignes(draw, titre, x, y, larg_max, couleur):
     ligne2 = ' '.join(mots[milieu:])
     b1     = draw.textbbox((0, 0), ligne1, font=police)
     h      = b1[3] - b1[1]
-    draw.text((x, y),         ligne1, font=police, fill=couleur)
+    draw.text((x, y),          ligne1, font=police, fill=couleur)
     draw.text((x, y + h + 6), ligne2, font=police, fill=couleur)
     return y + h * 2 + 20, 22
 
 
 # ─────────────────────────────────────────
-# TAILLE POLICE ADAPTATIVE CORRIGÉE
-# Basée sur la zone disponible réelle
+# TAILLE POLICE ADAPTATIVE
 # ─────────────────────────────────────────
 def taille_adaptative_zone(nb_chars, largeur_zone, hauteur_zone):
-    """
-    Calcule la taille de police optimale pour remplir
-    au mieux la zone de texte disponible.
-    """
     for taille in range(32, 11, -1):
         interligne   = int(taille * 1.6)
         chars_ligne  = int(largeur_zone / (taille * 0.50))
@@ -230,7 +220,7 @@ def taille_adaptative_zone(nb_chars, largeur_zone, hauteur_zone):
 # ─────────────────────────────────────────
 # GÉNÉRATION DU VISUEL
 # ─────────────────────────────────────────
-def generer_visuel(article, nom_fichier, charte, logo_path=None):
+def generer_visuel(article, nom_fichier, charte, taille_police=20, logo_path=None):
     from core.charte import charte_defaut
     if charte is None:
         charte = charte_defaut()
@@ -240,7 +230,7 @@ def generer_visuel(article, nom_fichier, charte, logo_path=None):
 
     LARGEUR = 1400
     HAUTEUR = 990
-    dossier_sortie = "output/articles_ok" # Définition de la variable manquante
+    dossier_sortie = "output/articles_ok"
 
     genere       = article["genere"]
     source       = article["source"]
@@ -272,163 +262,4 @@ def generer_visuel(article, nom_fichier, charte, logo_path=None):
     header_h = S.get("hauteur_header", 100)
     c_h1 = C.get("header",     (180, 160, 220))
     c_h2 = C.get("principale", (140, 200, 240))
-    degrade(draw, 0, 0, LARGEUR, header_h, c_h1, c_h2, vertical=False)
-
-    date_texte = f"Veille du {date_str}"
-    bbox_d     = draw.textbbox((0, 0), date_texte, font=pol_date)
-    draw.text(
-        (LARGEUR - (bbox_d[2]-bbox_d[0]) - 30,
-         (header_h - (bbox_d[3]-bbox_d[1])) // 2),
-        date_texte, font=pol_date, fill=(255, 255, 255)
-    )
-
-    # ── LOGO ──────────────────────────────
-    logo_cx, logo_cy, logo_r = 110, header_h + 82, 70
-    draw.ellipse(
-        [logo_cx-logo_r, logo_cy-logo_r, logo_cx+logo_r, logo_cy+logo_r],
-        fill=C.get("secondaire", (220, 200, 240))
-    )
-    logo_ok = False
-    
-    # Priorité au logo personnel de l'utilisateur
-    if logo_path and os.path.exists(logo_path):
-        try:
-            li = Image.open(logo_path).convert("RGBA")
-            tl = int(logo_r * 1.5)
-            li = li.resize((tl, tl), Image.LANCZOS)
-            img.paste(li, (logo_cx - tl//2, logo_cy - tl//2), li)
-            logo_ok = True
-        except:
-            pass
-
-    # Sinon, vérification des fichiers locaux par défaut
-    if not logo_ok:
-        for nom_logo in ["logo.png", "logo.jpg", "logo.jpeg"]:
-            if os.path.exists(nom_logo):
-                try:
-                    li = Image.open(nom_logo).convert("RGBA")
-                    tl = int(logo_r * 1.5)
-                    li = li.resize((tl, tl), Image.LANCZOS)
-                    img.paste(li, (logo_cx - tl//2, logo_cy - tl//2), li)
-                    logo_ok = True
-                    break
-                except:
-                    pass
-                    
-    if not logo_ok:
-        draw.text((logo_cx-18, logo_cy-12), "VN",
-                  font=pol_bold, fill=C.get("principale", (60, 100, 180)))
-
-    # ── TITRE SUR 2 LIGNES MAX ────────────
-    titre_x = logo_cx + logo_r + 25
-    titre_w = LARGEUR - titre_x - 40
-    y_st, taille_titre = titre_deux_lignes(
-        draw, titre, titre_x, header_h + 15, titre_w,
-        C.get("texte", (30, 30, 30))
-    )
-
-    # ── SOURCE ────────────────────────────
-    c_source = C.get("principale", (60, 100, 180))
-    src_lbl  = f"Source : {nom_source}"
-    draw.text((titre_x, y_st), src_lbl, font=pol_bold, fill=c_source)
-    bbox_src = draw.textbbox((titre_x, y_st), src_lbl, font=pol_bold)
-    draw.line(
-        [(bbox_src[0], bbox_src[3]+1), (bbox_src[2], bbox_src[3]+1)],
-        fill=c_source, width=1
-    )
-
-    # ── SÉPARATEUR ────────────────────────
-    sep_y = max(y_st + 32, logo_cy + logo_r + 12)
-    draw.rectangle(
-        [40, sep_y, LARGEUR-40, sep_y+2],
-        fill=C.get("secondaire", (200, 200, 200))
-    )
-
-    # ── ZONE IMAGE (gauche) ───────────────
-    img_x = 40
-    img_y = sep_y + 16
-    img_w = 468
-    img_h = HAUTEUR - img_y - 85
-
-    if image_url:
-        photo = telecharger_image(image_url, img_w, img_h)
-        mask  = Image.new("L", (img_w, img_h), 0)
-        ImageDraw.Draw(mask).rounded_rectangle(
-            [0, 0, img_w, img_h], radius=14, fill=255
-        )
-        img.paste(photo, (img_x, img_y), mask)
-    else:
-        draw.rounded_rectangle(
-            [img_x, img_y, img_x+img_w, img_y+img_h],
-            radius=14, fill=(210, 220, 230)
-        )
-
-    # Crédit photo UNIQUEMENT sous la photo
-    if image_credit:
-        draw.text(
-            (img_x, img_y + img_h + 3),
-            image_credit[:65],
-            font=pol_small, fill=(150, 150, 150)
-        )
-
-    # ── ZONE TEXTE (droite) ───────────────
-    txt_x = img_x + img_w + 28
-    txt_y = img_y
-    txt_w = LARGEUR - txt_x - 32
-    txt_h = img_h - 42
-
-    t_pol      = taille_adaptative_zone(len(contenu), txt_w, txt_h)
-    pol_texte  = trouver_police(t_pol, gras=False)
-    interligne = int(t_pol * 1.6)
-
-    nb_lignes   = int(txt_h / interligne)
-    chars_ligne = int(txt_w / (t_pol * 0.50))
-    nb_chars    = int(nb_lignes * chars_ligne * 0.90)
-
-    if len(contenu) > nb_chars:
-        affiche = contenu[:nb_chars].rsplit(' ', 1)[0] + "..."
-    else:
-        affiche = contenu
-
-    texte_justifie(
-        draw, affiche, txt_x, txt_y, txt_w,
-        pol_texte, C.get("texte", (50, 50, 50)), interligne
-    )
-
-    # ── TAGS ──────────────────────────────
-    tags_y      = img_y + img_h - 30
-    cols_tags   = [
-        C.get("tag1", (100, 180, 220)),
-        C.get("tag2", (160, 120, 200)),
-        C.get("tag3", (230, 160,  80))
-    ]
-    x_tag = txt_x
-    for i, tag in enumerate(tags[:5]):
-        tt    = f"  {tag}  "
-        col_t = cols_tags[i % len(cols_tags)]
-        bbt   = draw.textbbox((0, 0), tt, font=pol_small)
-        tw    = bbt[2] - bbt[0] + 10
-        if x_tag + tw > LARGEUR - 32:
-            break
-        draw.rounded_rectangle(
-            [x_tag, tags_y, x_tag+tw, tags_y+26],
-            radius=13, fill=col_t
-        )
-        draw.text((x_tag+5, tags_y+5), tt.strip(),
-                  font=pol_small, fill=(255, 255, 255))
-        x_tag += tw + 8
-
-    # ── FOOTER ────────────────────────────
-    fy = HAUTEUR - 66
-    draw.rectangle([0, fy, LARGEUR, HAUTEUR],
-                   fill=C.get("footer", (80, 160, 200)))
-    draw.text((30, fy+18),
-              f"Lien : {lien_source[:100]}",
-              font=pol_small, fill=(220, 240, 255))
-
-    # ── SAUVEGARDE ────────────────────────
-    os.makedirs(dossier_sortie, exist_ok=True)
-    chemin = f"{dossier_sortie}/{nom_fichier}.jpg"
-    img.save(chemin, "JPEG", quality=95)
-    print(f"Visuel sauvegarde : {chemin}")
-    return chemin
+    degrade(draw, 0,
