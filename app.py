@@ -101,7 +101,20 @@ def sauvegarder_config(config):
     with open("data/config.json", "w", encoding="utf-8") as f:
         json.dump(config, f, ensure_ascii=False, indent=2)
 
+def sauvegarder_config(config):
+    os.makedirs("data", exist_ok=True)
+    with open("data/config.json", "w", encoding="utf-8") as f:
+        json.dump(config, f, ensure_ascii=False, indent=2)
 
+def sauvegarder_logo(uploaded_file):
+    os.makedirs("data", exist_ok=True)
+    with open("data/logo.png", "wb") as f:
+        f.write(uploaded_file.getbuffer())
+
+def charger_logo():
+    if os.path.exists("data/logo.png"):
+        return "data/logo.png"
+    return None
 # ─────────────────────────────────────────
 # SIDEBAR — NAVIGATION
 # ─────────────────────────────────────────
@@ -622,7 +635,24 @@ elif page == "🎨 Charte graphique":
             st.image(Image.open(chemin), use_column_width=True)
 
     st.divider()
-
+    # --- NOUVEAU : GESTION DU LOGO PERSONNEL ---
+    st.subheader("🖼️ Logo personnel")
+    st.markdown("Vous pouvez importer le logo qui sera automatiquement ajouté à vos visuels.")
+    
+    logo_fichier = st.file_uploader("Uploader votre logo (PNG ou JPG)", type=["png", "jpg", "jpeg"])
+    if logo_fichier:
+        if st.button("💾 Sauvegarder le logo"):
+            sauvegarder_logo(logo_fichier)
+            st.success("✅ Logo sauvegardé avec succès !")
+            st.rerun()
+            
+    # Affichage du logo actuel
+    logo_actuel = charger_logo()
+    if logo_actuel:
+        st.markdown("**Logo actuel :**")
+        st.image(logo_actuel, width=150)
+        
+    st.divider()
     # Visuels générés
     st.subheader("📁 Visuels générés")
     fichiers_jpg = glob.glob("output/articles_ok/*.jpg")
