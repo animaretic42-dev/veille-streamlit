@@ -98,6 +98,19 @@ with st.sidebar:
     st.markdown("## 📡 Veille Numérique Pro")
     st.markdown("---")
 
+    # 🔴 Réinitialisation des données
+    if st.sidebar.button("🗑️ Réinitialiser l'application", type="secondary", use_container_width=True):
+        import shutil
+        
+        # Suppression des dossiers de données et articles
+        dossiers_a_vider = ["data", "output/articles_ok"]
+        for dossier in dossiers_a_vider:
+            if os.path.exists(dossier):
+                shutil.rmtree(dossier)
+                
+        st.sidebar.success("Données réinitialisées à zéro !")
+        st.rerun()
+        
     page = st.radio(
         "Navigation",
         ["🏠 Tableau de bord", "📋 Sources RSS", "📰 Articles", "🎨 Charte graphique"],
