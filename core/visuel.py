@@ -232,6 +232,7 @@ def generer_visuel(article, nom_fichier, charte, logo_path=None):
 
     LARGEUR = 1400
     HAUTEUR = 990
+    dossier_sortie = "output/articles_ok" # Définition de la variable manquante
 
     genere       = article["genere"]
     source       = article["source"]
@@ -280,17 +281,32 @@ def generer_visuel(article, nom_fichier, charte, logo_path=None):
         fill=C.get("secondaire", (220, 200, 240))
     )
     logo_ok = False
-    for nom_logo in ["logo.png", "logo.jpg", "logo.jpeg"]:
-        if os.path.exists(nom_logo):
-            try:
-                li  = Image.open(nom_logo).convert("RGBA")
-                tl  = int(logo_r * 1.5)
-                li  = li.resize((tl, tl), Image.LANCZOS)
-                img.paste(li, (logo_cx - tl//2, logo_cy - tl//2), li)
-                logo_ok = True
-                break
-            except:
-                pass
+    
+    # Priorité au logo personnel de l'utilisateur
+    if logo_path and os.path.exists(logo_path):
+        try:
+            li = Image.open(logo_path).convert("RGBA")
+            tl = int(logo_r * 1.5)
+            li = li.resize((tl, tl), Image.LANCZOS)
+            img.paste(li, (logo_cx - tl//2, logo_cy - tl//2), li)
+            logo_ok = True
+        except:
+            pass
+
+    # Sinon, vérification des fichiers locaux par défaut
+    if not logo_ok:
+        for nom_logo in ["logo.png", "logo.jpg", "logo.jpeg"]:
+            if os.path.exists(nom_logo):
+                try:
+                    li = Image.open(nom_logo).convert("RGBA")
+                    tl = int(logo_r * 1.5)
+                    li = li.resize((tl, tl), Image.LANCZOS)
+                    img.paste(li, (logo_cx - tl//2, logo_cy - tl//2), li)
+                    logo_ok = True
+                    break
+                except:
+                    pass
+                    
     if not logo_ok:
         draw.text((logo_cx-18, logo_cy-12), "VN",
                   font=pol_bold, fill=C.get("principale", (60, 100, 180)))
@@ -351,14 +367,12 @@ def generer_visuel(article, nom_fichier, charte, logo_path=None):
     txt_x = img_x + img_w + 28
     txt_y = img_y
     txt_w = LARGEUR - txt_x - 32
-    txt_h = img_h - 42   # réserver place pour les tags
+    txt_h = img_h - 42
 
-    # Taille police calculée selon la zone réelle disponible
     t_pol      = taille_adaptative_zone(len(contenu), txt_w, txt_h)
     pol_texte  = trouver_police(t_pol, gras=False)
     interligne = int(t_pol * 1.6)
 
-    # Calculer précisément combien de caractères tiennent
     nb_lignes   = int(txt_h / interligne)
     chars_ligne = int(txt_w / (t_pol * 0.50))
     nb_chars    = int(nb_lignes * chars_ligne * 0.90)
