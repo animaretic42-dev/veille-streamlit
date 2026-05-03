@@ -14,38 +14,39 @@ from datetime import datetime
 # POLICES — DejaVuSans en priorité (accents)
 # ─────────────────────────────────────────
 def trouver_police(taille, gras=False):
-    """
-    Cherche DejaVuSans en priorité (supporte é è à ç etc.)
-    Place DejaVuSans.ttf et DejaVuSans-Bold.ttf dans veille-pro/
-    Téléchargement : https://dejavu-fonts.github.io/
-    """
-    dossier_local = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    # Chemin absolu calculé depuis l'emplacement de ce fichier
+    # core/visuel.py → remonter 2 niveaux → veille-pro/
+    dossier_local   = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    dossier_courant = os.getcwd()
 
-    candidats_gras = [
-        os.path.join(dossier_local, "DejaVuSans-Bold.ttf"),
-        "DejaVuSans-Bold.ttf",
-        "C:/Windows/Fonts/DejaVuSans-Bold.ttf",
-        "C:/Windows/Fonts/arialbd.ttf",
-        "C:/Windows/Fonts/calibrib.ttf",
-        "C:/Windows/Fonts/segoeui.ttf",
-        "Montserrat-Bold.ttf",
-    ]
-    candidats_normal = [
-        os.path.join(dossier_local, "DejaVuSans.ttf"),
-        "DejaVuSans.ttf",
-        "C:/Windows/Fonts/DejaVuSans.ttf",
-        "C:/Windows/Fonts/arial.ttf",
-        "C:/Windows/Fonts/calibri.ttf",
-        "C:/Windows/Fonts/segoeui.ttf",
-        "Montserrat-Regular.ttf",
-    ]
+    # Cherche dans tous les emplacements possibles
+    def chemins(nom_fichier):
+        return [
+            os.path.join(dossier_local,   nom_fichier),
+            os.path.join(dossier_courant, nom_fichier),
+            nom_fichier,
+            f"C:/Windows/Fonts/{nom_fichier}",
+        ]
+
+    candidats_gras = (
+        chemins("DejaVuSans-Bold.ttf") +
+        ["C:/Windows/Fonts/arialbd.ttf",
+         "C:/Windows/Fonts/calibrib.ttf",
+         "C:/Windows/Fonts/segoeui.ttf"]
+    )
+    candidats_normal = (
+        chemins("DejaVuSans.ttf") +
+        ["C:/Windows/Fonts/arial.ttf",
+         "C:/Windows/Fonts/calibri.ttf",
+         "C:/Windows/Fonts/segoeui.ttf"]
+    )
+
     for nom in (candidats_gras if gras else candidats_normal):
         try:
             return ImageFont.truetype(nom, taille)
         except:
             continue
     return ImageFont.load_default()
-
 
 # ─────────────────────────────────────────
 # NETTOYAGE HTML — garde l'UTF-8 intact
